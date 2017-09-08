@@ -19,6 +19,7 @@ import com.mmall.vo.ProductDetailVo;
 import com.mmall.vo.ProductListVo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -75,11 +76,12 @@ public class ProductServiceImpl implements IProductService {
         Product product = new Product();
         product.setId(productId);
         product.setStatus(status);
+
         int rowCount = productMapper.updateByPrimaryKeySelective(product);
         if(rowCount > 0){
-            return ServerResponse.createBySuccess("修改产品销售状态成功");
+            return ServerResponse.createBySuccessMessage("修改产品销售状态成功");
         }
-        return ServerResponse.createByErrorMessage("修改产品销售状态失败");
+        return ServerResponse.createBySuccessMessage("修改产品销售状态失败");
     }
 
 
@@ -89,7 +91,7 @@ public class ProductServiceImpl implements IProductService {
         }
         Product product = productMapper.selectByPrimaryKey(productId);
         if(product == null){
-            return ServerResponse.createByErrorMessage("产品已下架或者删除");
+            return ServerResponse.createByErrorMessage("产品不存在");
         }
         ProductDetailVo productDetailVo = assembleProductDetailVo(product);
         return ServerResponse.createBySuccess(productDetailVo);
@@ -138,6 +140,8 @@ public class ProductServiceImpl implements IProductService {
         }
         PageInfo pageResult = new PageInfo(productList);
         pageResult.setList(productListVoList);
+
+
         return ServerResponse.createBySuccess(pageResult);
     }
 
@@ -158,10 +162,11 @@ public class ProductServiceImpl implements IProductService {
 
     public ServerResponse<PageInfo> searchProduct(String productName,Integer productId,int pageNum,int pageSize){
         PageHelper.startPage(pageNum,pageSize);
-        if(StringUtils.isNotBlank(productName)){
-            productName = new StringBuilder().append("%").append(productName).append("%").toString();
+        if(StringUtils.isNoneBlank(productName)){
+            productName = new StringBuffer().append("%").append(productName).append("%").toString();
         }
         List<Product> productList = productMapper.selectByNameAndProductId(productName,productId);
+
         List<ProductListVo> productListVoList = Lists.newArrayList();
         for(Product productItem : productList){
             ProductListVo productListVo = assembleProductListVo(productItem);
