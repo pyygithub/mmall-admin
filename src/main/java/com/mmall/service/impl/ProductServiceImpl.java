@@ -110,7 +110,7 @@ public class ProductServiceImpl implements IProductService {
         productDetailVo.setStatus(product.getStatus());
         productDetailVo.setStock(product.getStock());
 
-        productDetailVo.setImageHost(PropertiesUtil.getProperty("ftp.server.http.prefix","http://img.happymmall.com/"));
+        productDetailVo.setImageHost(PropertiesUtil.getProperty("ftp.img.server.http.prefix","http://img.happymmall.com/"));
 
         Category category = categoryMapper.selectByPrimaryKey(product.getCategoryId());
         if(category == null){
@@ -150,7 +150,7 @@ public class ProductServiceImpl implements IProductService {
         productListVo.setId(product.getId());
         productListVo.setName(product.getName());
         productListVo.setCategoryId(product.getCategoryId());
-        productListVo.setImageHost(PropertiesUtil.getProperty("ftp.server.http.prefix","http://img.happymmall.com/"));
+        productListVo.setImageHost(PropertiesUtil.getProperty("ftp.img.server.http.prefix","http://img.happymmall.com/"));
         productListVo.setMainImage(product.getMainImage());
         productListVo.setPrice(product.getPrice());
         productListVo.setSubtitle(product.getSubtitle());
@@ -184,7 +184,7 @@ public class ProductServiceImpl implements IProductService {
         }
         Product product = productMapper.selectByPrimaryKey(productId);
         if(product == null){
-            return ServerResponse.createByErrorMessage("产品已下架或者删除");
+            return ServerResponse.createByErrorMessage("产品不存在");
         }
         if(product.getStatus() != Const.ProductStatusEnum.ON_SALE.getCode()){
             return ServerResponse.createByErrorMessage("产品已下架或者删除");
@@ -198,15 +198,17 @@ public class ProductServiceImpl implements IProductService {
         if(StringUtils.isBlank(keyword) && categoryId == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.ILLEGAL_ARGUMENT.getCode(),ResponseCode.ILLEGAL_ARGUMENT.getDesc());
         }
-        List<Integer> categoryIdList = new ArrayList<Integer>();
+        List<Integer> categoryIdList = Lists.newArrayList();
 
         if(categoryId != null){
             Category category = categoryMapper.selectByPrimaryKey(categoryId);
             if(category == null && StringUtils.isBlank(keyword)){
                 //没有该分类,并且还没有关键字,这个时候返回一个空的结果集,不报错
                 PageHelper.startPage(pageNum,pageSize);
+
                 List<ProductListVo> productListVoList = Lists.newArrayList();
                 PageInfo pageInfo = new PageInfo(productListVoList);
+
                 return ServerResponse.createBySuccess(pageInfo);
             }
             categoryIdList = iCategoryService.selectCategoryAndChildrenById(category.getId()).getData();

@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 /**
@@ -114,8 +115,13 @@ public class ProductManageController {
 
         }
         if(iUserService.checkAdminRole(user).isSuccess()){
-            //填充业务逻辑
-            return iProductService.searchProduct(productName, productId, pageNum, pageSize);
+            /* 填充业务逻辑 */
+            try {
+                productName = new String(productName.getBytes("ISO8859-1"), "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            return iProductService.searchProduct(productName , productId, pageNum, pageSize);
         }else{
             return ServerResponse.createByErrorMessage("无权限操作");
         }
